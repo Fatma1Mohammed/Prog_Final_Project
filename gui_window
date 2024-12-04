@@ -1,0 +1,515 @@
+# GUI:
+import tkinter as tk  # Import the tkinter library for GUI elements
+from tkinter import messagebox  # Import the messagebox module for displaying messages
+from datetime import datetime  # Import the datetime module for working with dates and times
+from classes import User, Admin, Account, LoyaltyProgram, Ticket, Reservation, Purchase, Payment, Notification, Feedback
+from utilities import save_to_file, load_from_file
+# Main Application Class
+class TicketBookingApp:
+  """Class to represent a ticket booking app for GUI window"""
+
+  # Constructor to initialize the ticket booking app attributes.
+  def __init__(self, root):
+    self.root = root
+    self.root.title("Adventure Land Theme Park Ticket Booking System")
+    self.current_user = None
+    self.users = self.load_users()
+    self.tickets = self.load_tickets()
+    self.purchases = self.load_purchases()
+    self.admins = self.load_admins()
+
+    # Call the main_menu window
+    self.main_menu()
+
+  # Load data from files
+  def load_users(self):
+    try:
+      return load_from_file('users.pkl')
+    except FileNotFoundError:
+      print("The user data file not found.")
+      # To handle the when the file doesn't exist, create an empty dictionary.
+      return {}
+
+  def load_tickets(self):
+    try:
+      return load_from_file('tickets.pkl')
+    except FileNotFoundError:
+      print("The given ticket data file not found.")
+      # To handle the when the file doesn't exist; create an empty dictionary.
+      return {}
+
+  def load_purchases(self):
+    try:
+      return load_from_file('purchases.pkl')
+    except FileNotFoundError:
+      # To handle when the file doesn't exist create an empty list.
+      print("Purchase data file not found. Creating an empty list.")
+      return []
+
+
+  def load_admins(self):
+    try:
+      return load_from_file('admins.pkl')
+    except FileNotFoundError:
+      # To handle the case when the file doesn't exist; create an empty dictionary.
+      print("Admin data file not found. Creating a new one.")
+      return {}
+
+
+  # Save data to files
+  # Define a function to save users data to users.pkl file
+  def save_users(self):
+    save_to_file('users.pkl', self.users)
+
+  # Define a function to save purchases data to purchases.pkl file
+  def save_purchases(self):
+    save_to_file('purchases.pkl', self.purchases)
+
+  # Define a function to save admins data to admins.pkl file.
+  def save_admins(self):
+    save_to_file('admins.pkl', self.admins)
+
+  # Define a function to save tickets data to tickets.pkl file.
+  def save_tickets(self):
+    save_to_file('tickets.pkl', self.tickets)
+
+
+  # Main Menu
+  # Define a function to create the main window.
+  def main_menu(self):
+    self.clear_frame()
+    frame = tk.Frame(self.root)
+    frame.pack()
+
+    # Create a label widget in the frame with the text "Welcome to Adventure Land Theme Park" and add padding on the y-axis.
+    tk.Label(frame, text="Welcome to Adventure Land Theme Park").pack(pady=10)
+    # Create a button widget for the Login screen with padding on the y-axis.
+    tk.Button(frame, text="Login", command=self.login_screen).pack(pady=5)
+    # Create a button widget for the Register screen with padding on the y-axis.
+    tk.Button(frame, text="Register", command=self.register_screen).pack(pady=5)
+    # Create a button widget for the Admin Login screen with padding on the y-axis.
+    tk.Button(frame, text="Admin Login", command=self.admin_login_screen).pack(pady=5)
+    # Create a button widget for creating a new Admin with padding on the y-axis.
+    tk.Button(frame, text="Create Admin", command=self.admin_registration_screen).pack(pady=5)
+
+  # Clear Frame
+  # Define a function to clear the frame.
+  def clear_frame(self):
+    for widget in self.root.winfo_children():
+      widget.destroy() # use the destroy() function to clear the data in the widget.
+
+  # Registration Screen
+  # Define a function to manage the registeration screen.
+  def register_screen(self):
+    self.clear_frame()
+    frame = tk.Frame(self.root)
+    frame.pack(pady=10)
+    # Create a label for User Registration heading and setting it into grid, row 0, column 1
+    tk.Label(frame, text="User Registration").grid(row=0, column=1)
+
+    # Create a label for Name field and setting it into grid, row 1, column 0
+    tk.Label(frame, text="Name").grid(row=1, column=0)
+    # Create an entry widget for name input and placing into grid, row 1, column 1
+    name_entry = tk.Entry(frame)
+    name_entry.grid(row=1, column=1)
+
+    # Create a label for the Email field and put it in the grid at row 2, column 0
+    tk.Label(frame, text="Email").grid(row=2, column=0)
+    # Create an entry widget for email input and put it in the grid at row 2, column 1
+    email_entry = tk.Entry(frame)
+    email_entry.grid(row=2, column=1)
+
+    # Create a label for the Password field and put it in the grid at row 3, column 0
+    tk.Label(frame, text="Password").grid(row=3, column=0)
+    # Create an entry widget for password input, with hidden characters, and place it in the grid at row 3, column 1
+    password_entry = tk.Entry(frame, show="*")
+    password_entry.grid(row=3, column=1)
+
+    # Create a button for the Register action, linking it to the register_user method, and place it in the grid at row 4, column 1
+    tk.Button(frame, text="Register", command=lambda: self.register_user(
+        name_entry.get(), email_entry.get(), password_entry.get())).grid(row=4, column=1)
+    # Create a button to go back to the main menu and place it in the grid at row 5, column 1
+    tk.Button(frame, text="Back", command=self.main_menu).grid(row=5, column=1)
+
+
+  # Register User
+  # Define a function to register a new user.
+  def register_user(self, name, email, password):
+    # Use an if statement to check if the email is already registered.
+    if email in self.users:
+      # Return an error message if the email is already registered.
+      messagebox.showerror("Error", "Email already registered.")
+      return
+
+    # Create a new user ID by taking the current number od users and adding 1
+    user_id = len(self.users) + 1
+    # Create a new User object with the given details
+    user = User(user_id, name, email, password)
+    # Add the new User object to the users dictionary with the email as the key
+    self.users[email] = user
+    self.save_users() # save the updates users list
+    # Return a success message for successful registration
+    messagebox.showinfo("Success", "Registration successful!")
+    self.main_menu() # return to the main menu
+
+
+  # Login Screen
+  # Define a function to show the login screen.
+  def login_screen(self):
+    self.clear_frame() # reset the current frame.
+    frame = tk.Frame(self.root) # create a new frame.
+    frame.pack(pady=10)
+
+    # Create a label for the User Login heading and set its position in grid at row 0, column 1.
+    tk.Label(frame, text="User Login").grid(row=0, column=1)
+
+    # Create a label to identify the Email field and set its position in grid at row 1, column 0.
+    tk.Label(frame, text="Email").grid(row=1, column=0)
+    # Create an entry widget for email input and place it in the grid at row 1, column 1.
+    email_entry = tk.Entry(frame)
+    email_entry.grid(row=1, column=1)
+
+    # Add a label for the Password field and place it in the grid at row 2, column 0.
+    tk.Label(frame, text="Password").grid(row=2, column=0)
+    # Create an entry widget for password input, with hidden characters, and place it in the grid at row 2, column 1.
+    password_entry = tk.Entry(frame, show="*")
+    password_entry.grid(row=2, column=1)
+
+    # Add a button for the Login action, calling the login_user method with the entered email and password.
+    tk.Button(frame, text="Login", command=lambda: self.login_user(
+        email_entry.get(), password_entry.get())).grid(row=3, column=1)
+    # Add a button to go back to the main menu and place it in the grid at row 4, column 1.
+    tk.Button(frame, text="Back", command=self.main_menu).grid(row=4, column=1)
+
+  # Login User
+  # Define a function to manage user's login process.
+  def login_user(self, email, password):
+    # Add an if statement to check if the email is registered.
+    if email in self.users:
+      user = self.users[email]
+      if user._User__password == password: # verify the password.
+        self.current_user = user
+        # Return a success message with redirect to user dashboard.
+        messagebox.showinfo("Success", "Login successful!")
+        self.user_dashboard()
+      else :# In case of incorrect password display error message.
+        messagebox.showerror("Error", "Incorrect password.")
+    else: # Display error in case of unregistered email.
+      messagebox.showerror("Error", "Email not registered.")
+
+
+  # User Dashboard
+  def user_dashboard(self):
+    self.clear_frame() # Clear current frame.
+    frame = tk.Frame(self.root) # New Frame.
+    frame.pack(pady=10)
+
+    # Add Welcome label with username
+    tk.Label(frame, text=f"Welcome, {self.current_user._User__name}").pack()
+    # Add button that routes to ticket purchase screen
+    tk.Button(frame, text="Purchase Ticket", command=self.ticket_purchase_screen).pack(pady=5)
+    # Add a button to view purchase history
+    tk.Button(frame, text="View Purchase History", command=self.view_purchase_history).pack(pady=5)
+    # Add a button to logout
+    tk.Button(frame, text="Logout", command=self.logout).pack(pady=5)
+
+
+  # Logout
+  def logout(self):
+    self.current_user = None # Clear the current user and return to the main menu.
+    self.main_menu()
+
+
+  # View Purchase History
+  def view_purchase_history(self):
+    self.clear_frame() # Clear the current frame.
+    frame = tk.Frame(self.root) # Create a new frame.
+    frame.pack(pady=10)
+
+    # Add a label for the purchase history heading.
+    tk.Label(frame, text="Purchase History").pack()
+    # Get and show the user their purchase history.
+    history = self.current_user.view_history()
+    for purchase in history:
+      tk.Label(frame, text=purchase.generate_receipt()).pack()
+
+    # Add a button to return to the user dashboard.
+    tk.Button(frame, text="Back", command=self.user_dashboard).pack(pady=5)
+
+
+  # Ticket Purchase Screen
+  def ticket_purchase_screen(self):
+    self.clear_frame() # Clear the current frame.
+    frame = tk.Frame(self.root) # Create a new frame.
+    frame.pack(pady=10)
+
+    # Add a label for choosing the type of ticket.
+    tk.Label(frame, text="Select Ticket Type").pack()
+
+    # Sample ticket types
+    if not self.tickets:
+      self.create_sample_tickets() # Create sample ticket types if not already existing.
+
+    for ticket_id, ticket in self.tickets.items():
+      # Add buttons for each type of ticket linking to the purchase_ticket method.
+      tk.Button(frame, text=f"{ticket._Ticket__ticket_type} - ${ticket._Ticket__price}",
+                command=lambda t=ticket: self.purchase_ticket(t)).pack(pady=5)
+
+    # Add a button to go back to the user dashboard.
+    tk.Button(frame, text="Back", command=self.user_dashboard).pack(pady=5)
+
+
+  # Create Sample Tickets
+  def create_sample_tickets(self):
+    ticket1 = Ticket(101, "Single-Day Pass", 275, "1 Day", "Access to park")
+    ticket2 = Ticket(102, "Multi-Day Pass", 500, "3 Days", "Access to park and events")
+    ticket3 = Ticket(103, "Annual Membership", 1000, "1 Year", "Unlimited access")
+    self.tickets = {ticket1._Ticket__ticket_id: ticket1,
+                    ticket2._Ticket__ticket_id: ticket2,
+                    ticket3._Ticket__ticket_id: ticket3}
+    self.save_tickets()
+
+
+  # Purchase Ticket
+  def purchase_ticket(self, ticket):
+    self.clear_frame()
+    frame = tk.Frame(self.root)
+    frame.pack(pady=10)
+
+
+    tk.Label(frame, text=f"Purchasing {ticket._Ticket__ticket_type}").pack()
+    tk.Label(frame, text=f"Price: ${ticket._Ticket__price}").pack()
+
+
+    tk.Label(frame, text="Select Payment Method").pack()
+    payment_methods = ["Credit Card", "Debit Card", "Digital Wallet"]
+    payment_var = tk.StringVar(value=payment_methods[0])
+    tk.OptionMenu(frame, payment_var, *payment_methods).pack()
+
+
+    tk.Button(frame, text="Confirm Purchase",
+              command=lambda: self.confirm_purchase(ticket, payment_var.get())).pack(pady=5)
+    tk.Button(frame, text="Back", command=self.ticket_purchase_screen).pack(pady=5)
+
+
+  # Confirm Purchase
+  def confirm_purchase(self, ticket, payment_method):
+    # Create new purchase id by aking the length of the current list of purchases and adding 1.
+    purchase_id = len(self.purchases) + 1
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # Get today's date.
+    # Return a new Purchase object based on the details provided.
+    purchase = Purchase(purchase_id, self.current_user._User__user_id,
+                        ticket._Ticket__ticket_id, payment_method, date)
+    self.purchases.append(purchase) # Append the new purchase to the list of purchases.
+    self.save_purchases() # Save the updated purchases list.
+    self.current_user.add_purchase(purchase) # Add the purchase to the current user's purchase history.
+    self.save_users() # Save the updated users list.
+    # Return a success message for completed purchase.
+    messagebox.showinfo("Success", "Purchase completed!")
+    self.user_dashboard() # Navigate to the user dashboard.
+
+  def admin_registration_screen(self):
+    self.clear_frame() # Clears the current frame.
+    frame = tk.Frame(self.root) # Create a new frame.
+    frame.pack(pady=10)
+
+    # Add label for Admin Registration heading.
+    tk.Label(frame, text="Admin Registration").grid(row=0, column=1)
+
+    # Add Label and entry widget for the Name field.
+    tk.Label(frame, text="Name").grid(row=1, column=0)
+    name_entry = tk.Entry(frame)
+    name_entry.grid(row=1, column=1)
+
+    # Add a label and entry widget for the Email field.
+    tk.Label(frame, text="Email").grid(row=2, column=0)
+    email_entry = tk.Entry(frame)
+    email_entry.grid(row=2, column=1)
+
+    # Add a label and entry widget for the Password field, with hidden characters.
+    tk.Label(frame, text="Password").grid(row=3, column=0)
+    password_entry = tk.Entry(frame, show="*")
+    password_entry.grid(row=3, column=1)
+
+    # Add a label and entry widget for the Privileges field.
+    tk.Label(frame, text="Privileges").grid(row=4, column=0)
+    privileges_entry = tk.Entry(frame)
+    privileges_entry.grid(row=4, column=1)
+
+    # Add a button to register the admin, calling the create_admin_account method with the entered details.
+    tk.Button(frame, text="Register Admin", command=lambda: self.create_admin_account(
+        name_entry.get(), email_entry.get(), password_entry.get(), privileges_entry.get())).grid(row=5, column=1)
+    # Add a button to go back to the main menu
+    tk.Button(frame, text="Back", command=self.main_menu).grid(row=6, column=1)
+
+  # Define a function to create an admin account.
+  def create_admin_account(self, name, email, password, privileges):
+    # Add an if-statement and check if the admin email is already registered.
+    if email in self.admins:
+      # In case of admin email already registered, show error message.
+      messagebox.showerror("Error", "Admin email already registered.")
+      return
+
+    # To generate new admin ID, get the current number of admins and add 1 to that number.
+    admin_id = len(self.admins) + 1
+    # Create a new Admin object with the given details.
+    admin = Admin(admin_id, name, email, password, privileges)
+    # Add the new admin to the admins dictionary with the email as the key.
+    self.admins[email] = admin
+    # Save the updated admins list.
+    self.save_admins()
+    # Show success message for successful registration.
+    messagebox.showinfo("Success", f"Admin {name} registered successfully!")
+    self.main_menu() # Return to main menu.
+
+
+  # Admin Login Screen
+  def admin_login_screen(self):
+    self.clear_frame() # clear the current frame.
+    frame = tk.Frame(self.root) # create a new frame.
+    frame.pack(pady=10)
+
+
+    # Add the label for the Admin Login heading in the grid at row 0, column 1.
+    tk.Label(frame, text="Admin Login").grid(row=0, column=1)
+
+    # Add the label for the Email field in the grid at row 1, column 0.
+    tk.Label(frame, text="Email").grid(row=1, column=0)
+    # Create an entry widget for email input and place it in the grid at row 1, column 1.
+    email_entry = tk.Entry(frame)
+    email_entry.grid(row=1, column=1)
+
+    # Add a label for the Password field and place it in the grid at row 2, column 0.
+    tk.Label(frame, text="Password").grid(row=2, column=0)
+    # Create entry widget for password input, that hides the characters also.
+    password_entry = tk.Entry(frame, show="*")
+    password_entry.grid(row=2, column=1)
+
+    # Add a button for Login action: calls method login_admin with the email and password entered by user.
+    tk.Button(frame, text="Login", command=lambda: self.login_admin(
+        email_entry.get(), password_entry.get())).grid(row=3, column=1)
+    # Add a button to go back to the main menu and place it in the grid at row 4, column 1.
+    tk.Button(frame, text="Back", command=self.main_menu).grid(row=4, column=1)
+
+
+  # Login Admin
+  def login_admin(self, email, password):
+    # Add an if-statement to check if the admin email is registered.
+    if email in self.admins:
+      admin = self.admins[email]
+      if admin._User__password == password: # Check password.
+        # Redirect to admin dashboard with displaying a message.
+        self.current_user = admin
+        messagebox.showinfo("Success", "Admin login successful!")
+        self.admin_dashboard()
+      else:
+        # Show an error message for incorrect password.
+        messagebox.showerror("Error", "Incorrect password.")
+    # Display error for unregistered email.
+    else:
+      messagebox.showerror("Error", "Admin email not registered.")
+
+  # Admin Dashboard
+  def admin_dashboard(self):
+    self.clear_frame() # Clear the current frame
+    frame = tk.Frame(self.root) # create a new frame
+    frame.pack(pady=10)
+
+    # Add a label for the Admin Dashboard title
+    tk.Label(frame, text="Admin Dashboard").pack()
+    # Add a button to view ticket sales to link it to the view_ticket_sales function.
+    tk.Button(frame, text="View Ticket Sales", command=self.view_ticket_sales).pack(pady=5)
+    # Add a button modify discounts to link it to the modify_discounts function.
+    tk.Button(frame, text="Modify Discounts", command=self.modify_discounts).pack(pady=5)
+    # Add a button to logout and link it to the logout function.
+    tk.Button(frame, text="Logout", command=self.logout).pack(pady=5)
+
+
+  # View Ticket Sales
+  # Define a function for viewing ticket sales.
+  def view_ticket_sales(self):
+    self.clear_frame() # clear the current frams
+    frame = tk.Frame(self.root) # create a new frame.
+    frame.pack(pady=10)
+
+
+    sales_data = self.calculate_sales() # Calculate the sales data.
+    # Add a label for the Ticket Sales Data heading
+    tk.Label(frame, text="Ticket Sales Data").pack()
+    # Create a for loop and iterate to display the sales data for each ticket type.
+    for ticket_type, count in sales_data.items():
+      tk.Label(frame, text=f"{ticket_type}: {count} sold").pack()
+
+    # Add a button to return to admin dashboard
+    tk.Button(frame, text="Back", command=self.admin_dashboard).pack(pady=5)
+
+
+  # Calculate Sales
+  # Define a function to calculate the sales based on purchases.
+  def calculate_sales(self):
+    sales = {} # Create a dictionary to store sales count for each ticket type.
+    # Create a for loop and iterate over all purchases.
+    for purchase in self.purchases:
+      ticket_id = purchase._Purchase__ticket_id # Get the ticket ID from the purchase
+      ticket = self.tickets.get(ticket_id) # Retrieve the ticket object using the ticket ID
+      if ticket:
+        ticket_type = ticket._Ticket__ticket_type # Get the ticket type from the ticket object
+        sales[ticket_type] = sales.get(ticket_type, 0) + 1 # Increment the sales count for the ticket type
+    return sales
+
+
+  # Modify Discounts
+  # Define a function to show the Modify Discounts page.
+  def modify_discounts(self):
+    self.clear_frame() # Clear the active frame
+    frame = tk.Frame(self.root) # create a new frame
+    frame.pack(pady=10)
+
+    # Create label for heading of Modify Discounts
+    tk.Label(frame, text="Modify Discounts").pack()
+    # Create label for selection of type of ticket
+    tk.Label(frame, text="Select Ticket Type").pack()
+    # Create a StringVar to hold the selected ticket type with default of first ticket type
+    ticket_var = tk.StringVar(value=list(self.tickets.keys())[0])
+    # Create an option menu for selecting the ticket type and pack it into the frame
+    tk.OptionMenu(frame, ticket_var, *self.tickets.keys()).pack()
+
+    # Add a label for the Discount Percentage input
+    tk.Label(frame, text="Discount Percentage").pack()
+    # Create an entry widget for entering the discount percentage and pack it into the frame
+    discount_entry = tk.Entry(frame)
+    discount_entry.pack()
+
+    # Add a button to apply the discount, calling the apply_discount method with the selected ticket type and discount percentage
+    tk.Button(frame, text="Apply Discount",
+              command=lambda: self.apply_discount(ticket_var.get(), discount_entry.get())).pack(pady=5)
+    # Add a button to go back to the admin dashboard and pack it into the frame
+    tk.Button(frame, text="Back", command=self.admin_dashboard).pack(pady=5)
+
+
+  # Apply Discount
+  # Define a function that applies a discount to a ticket based on ticket_id.
+  def apply_discount(self, ticket_id, discount):
+    try:
+      discount = float(discount) # Convert the discount to a float.
+      ticket = self.tickets.get(int(ticket_id)) # Get the ticket object by the ticket_id.
+      if ticket:
+        original_price = ticket._Ticket__price # Save the original price of the ticket.
+        discounted_price = ticket.calculate_discount(discount) # Calculate the price with discount using the method in ticket.
+        ticket._Ticket__price = discounted_price # Use the result to update the ticket's price.
+        self.save_tickets() # Store the updated tickets.
+        # Return a success message with the new price.
+        messagebox.showinfo("Success", f"Discount applied. New price: ${discounted_price}")
+        self.admin_dashboard() # Route to admin dashboard
+      else:
+        # Return error message for invalid ticket ID.
+        messagebox.showerror("Error", "Invalid ticket ID.")
+    except ValueError:
+      # Return error message to show when the discount is not a valid number.
+      messagebox.showerror("Error", "Please enter a valid discount percentage.")
+
+
+if __name__ == "__main__":
+  root = tk.Tk()
+  app = TicketBookingApp(root)
+  root.mainloop()
