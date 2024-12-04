@@ -1,0 +1,17 @@
+#Pickle:
+from classes import User, Admin, Account, LoyaltyProgram, Ticket, Reservation, Purchase, Payment, Notification, Feedback
+import pickle  # Import the pickle module for serialization and deserialization
+
+# Utility Functions for File Operations
+
+# Define a function to save an object to a file using pickle.
+def save_to_file(filename, obj):
+  # Serialize the object to a file.
+  with open(filename, 'wb') as file:
+    pickle.dump(obj, file)
+
+# Define a function to load an object from a file using pickle.
+def load_from_file(filename):
+  # Deserialize the object from the file
+  with open(filename, 'rb') as file:
+    return pickle.load(file)
