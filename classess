@@ -1,0 +1,203 @@
+#Classes:
+
+# Base Class: User
+class User:
+  """Define a class to represent a user"""
+
+  # Constructor to initialize the user class attributes
+  def __init__(self, user_id, name, email, password):
+    self.__user_id = user_id
+    self.__name = name
+    self.__email = email
+    self.__password = password
+    self.__purchase_history = []
+
+  # Define a function to register a new user and return a success message
+  def register(self):
+    return f"User {self.__name} registered successfully!"
+
+  # Define a function to login user and validate credentials, return success or error message
+  def login(self, email, password):
+    if self.__email == email and self.__password == password:
+      return "Login successful!"
+    return "Invalid email or password."
+
+  # Define a function to return the user's purchase history.
+  def view_history(self):
+    return self.__purchase_history
+
+  # Define a function to add a purchase to the user's history.
+  def add_purchase(self, purchase):
+    self.__purchase_history.append(purchase)
+
+# Subclass: Admin (inherits from User)
+class Admin(User):
+  """Define a class to represent an admin user"""
+
+  # Initialize the admin class attributes
+  def __init__(self, user_id, name, email, password, privileges):
+    super().__init__(user_id, name, email, password) # Use super() function to inherit the User attributes.
+    self.__privileges = privileges # add privileges attribute for the admin class to represent the admin's privilege
+
+  # Define a function for admins to modify discounts, returns a success message.
+  def modify_discounts(self):
+    return "Discounts modified."
+
+  # Define a function to view sales data and returns a message.
+  def view_sales(self):
+    return "Displaying sales data."
+
+# Account Class (Composition with User)
+class Account:
+  """Define a class to represent an account"""
+
+  # Constructor to initialize the account class attributes.
+  def __init__(self, account_id, user_id, account_status="Active"):
+    self.__account_id = account_id
+    self.__user_id = user_id
+    self.__account_status = account_status
+
+  # Define a function to activate a user's account and returns a success message.
+  def activate_account(self):
+    self.__account_status = "Active"
+    return "Account activated."
+
+  # Define a function to deactivate a user's account and returns a success message.
+  def deactivate_account(self):
+    self.__account_status = "Inactive"
+    return "Account deactivated."
+
+  # Define a function to update account status and returns a message.
+  def update_account(self, status):
+    self.__account_status = status
+    return f"Account status updated to {status}."
+
+# LoyaltyProgram Class (Dependency with User)
+class LoyaltyProgram:
+  """Class to represent a loyalty program"""
+
+  # Constructor to initialize the loyality program class attributes.
+  def __init__(self, program_id, user_id, points=0, rewards=None):
+    self.__program_id = program_id
+    self.__user_id = user_id
+    self.__points = points
+    self.__rewards = rewards or [] # Add rewards attribute to initialize rewards as an empty list if no data provided.
+
+  # Define a function to add points to a user's loyality program and returns a message.
+  def add_points(self, points):
+    self.__points += points
+    return f"{points} points added. Total: {self.__points}"
+
+  # Define a function to redeem a reward from the user's program and returns a message.
+  def redeem_rewards(self, reward):
+    if reward in self.__rewards:
+      self.__rewards.remove(reward)
+      return f"Reward '{reward}' redeemed."
+    return "Reward not available."
+
+# Ticket Class
+class Ticket:
+  """Class to represent a ticket"""
+
+  # Constructor to initialize the ticket class attributes.
+  def __init__(self, ticket_id, ticket_type, price, validity, features):
+    self.__ticket_id = ticket_id
+    self.__ticket_type = ticket_type
+    self.__price = price
+    self.__validity = validity
+    self.__features = features
+
+  # Define a function to calculate the discount price of a ticket.
+  def calculate_discount(self, percentage):
+    discounted_price = self.__price * (1 - percentage / 100)
+    return discounted_price
+
+# Reservation Class (Aggregation with Event)
+class Reservation:
+  """Class to represent a reservation"""
+
+  # Constructor to initialize reservation class attributes.
+  def __init__(self, reservation_id, user_id, event_id, reservation_date):
+    self.__reservation_id = reservation_id
+    self.__user_id = user_id
+    self.__event_id = event_id
+    self.__reservation_date = reservation_date
+
+  # Define a function to make a reservation for an event.
+  def make_reservation(self):
+    return f"Reservation {self.__reservation_id} made for user {self.__user_id}."
+
+  # Define a function to cancel a reservation.
+  def cancel_reservation(self):
+    return f"Reservation {self.__reservation_id} canceled."
+
+# Purchase Class (Composition with Payment)
+class Purchase:
+  """Class to represent a purchase"""
+
+  # Constructor to initialize the purchase class attributes.
+  def __init__(self, purchase_id, user_id, ticket_id, payment_method, date):
+    self.__purchase_id = purchase_id
+    self.__user_id = user_id
+    self.__ticket_id = ticket_id
+    self.__payment_method = payment_method
+    self.__date = date
+
+  # Define a function to generate a receipt for a purchase.
+  def generate_receipt(self):
+    return f"Receipt: Purchase ID: {self.__purchase_id}, User ID: {self.__user_id}, Ticket ID: {self.__ticket_id}"
+
+# Payment Class
+class Payment:
+  """Class to represent a payment"""
+
+  # Constructor to initialize the payment class attributes.
+  def __init__(self, payment_id, amount, payment_method, status="Pending"):
+    self.__payment_id = payment_id
+    self.__amount = amount
+    self.__payment_method = payment_method
+    self.__status = status
+
+  # Define a function to process a payment and updates status to 'Completed'.
+  def process_payment(self):
+    self.__status = "Completed"
+    return f"Payment {self.__payment_id} completed."
+
+# Notification Class
+class Notification:
+  """Class to represent a notification"""
+
+  # Constructor to initialize the notification class attributes.
+  def __init__(self, notification_id, user_id, message, status="Unread"):
+    self.__notification_id = notification_id
+    self.__user_id = user_id
+    self.__message = message
+    self.__status = status
+
+  # Define a function to send a notification to a user and returns a success message.
+  def send_notification(self):
+    return f"Notification sent to User {self.__user_id}: {self.__message}"
+
+  # Define a function to mark a notification as read and update its status.
+  def mark_as_read(self):
+    self.__status = "Read"
+    return "Notification marked as read."
+
+# Feedback Class
+class Feedback:
+  """Class to represent a feedback"""
+
+  # Constructor to initialize feedback class attributes.
+  def __init__(self, feedback_id, user_id, rating, comment):
+    self.__feedback_id = feedback_id
+    self.__user_id = user_id
+    self.__rating = rating
+    self.__comment = comment
+
+  # Define a function to submit feedback and returns a success message.
+  def submit_feedback(self):
+    return f"Feedback {self.__feedback_id} submitted."
+
+  # Define a function to view feedback details and returns a dictionary of rating and comment.
+  def view_feedback(self):
+    return {"Rating": self.__rating, "Comment": self.__comment}
